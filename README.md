@@ -1,2 +1,38 @@
 # Protonvpn-qBitorrent-auto-port
 a collection of scripts and unit files to handle protonvpn's port forwarding behavior for qBitorrent
+
+## Basic components
+This setup expects that you are running a systemd based linux distribution that ships firewalld and NetworkManager. It also requires ProtonVPN to be installed with the GUI.
+
+The basic principle is that protonVPN publishes the forwarded port to `/run/user/$UID/Proton/VPN/forwarded_port` so we can use a systemd path unit to monitor that file for changes and update the port being used in qBitorrent through the API while also opening the port in firewalld.
+
+## systemd unit files
+Using systemd for this requires 2 files, a .path file to watch the forwarded_port file and a .service file for that path file to trigger.
+Examples of these files can be found in this repo called 
+`proton-port-watch.path` and `proton-port-watch.service`
+These files should be placed in `/etc/systemd/system/`
+
+### proton-port-watch.path
+This file will need `PathModified=/run/user/1000/Proton/VPN/forwarded_port` changed to replace '1000' with the UID of the user running the protonVPN application.
+
+This is the unit file you will be starting in order to make this process automatic. `systemctl daemon-reload` and `systemctl enable --now proton-port-watch.path` to start and make sure it persists through reboots
+
+## core script
+update_port.sh is the core script that does the work in this setup. It currently expects the qBitorrent webIU to be accessible over localhost and have the option "Bypass authentication for clients on localhost" checked.
+
+Once update 5.2.x rolls out and we get support for API keys, I will be updating the script to support that method of authentication. 
+
+The script has a few variables that can be modified to suit your needs: 
+
+ZONE refers to the firewall zone that ProtonVPN is running on—there is a NetworkManager dispatcher script in the repo for automatically setting the wiregaurd connection to the dmz zone—you should set this to your default zone or remove all instances of --zone from the firewall-cmd commands if you dont want to use it
+
+PORT_FILE change the 1000 to reflect the UID of the user running protonVPN like you did with `proton-port-watch.path`
+
+QBT_URL this can be changed to the URL that your qBitorrent webUI is accessible at, but authentication needs to be disabled at this time so its best to leave this as localhost.
+
+## NetworkManager interface zone management
+The script `99-protonvpn-zone` is to be used in the event that you want to move the `proton0` interface from your default firewalld zone unti the dmz—or any other zone—so that port modifications only affect the proton connection.
+
+This script should be placed in `/etc/NetworkManager/dispatcher.d/` and have its ownership set to root:root and permissions set to 700 (read/write/execute for owner only).
+
+This script will be run any time a new interface comes up in NetworkManager and checks to see if that interface is named `proton0`, if the interface corresponds to protonVPN's wiregaurd interface the script will then use nmcli to change the firewealld zone of the interface to the chosen zone. In this example, it is set to configure the interface to use the dmz zone. 
