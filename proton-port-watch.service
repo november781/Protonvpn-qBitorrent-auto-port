@@ -1,0 +1,9 @@
+[Unit]
+Description=Update qBittorrent and Firewall (Root)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/update_port.sh
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if [ "$1" == "proton0" ] && [ "$2" == "up" ]; then
+	nmcli device modify "$1" connection.zone dmz
+fi

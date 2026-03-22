@@ -1,0 +1,10 @@
+[Unit]
+Description=Watch Proton VPN forwarded port file (System Wide)
+
+[Path]
+# Replace '1000' with your actual UID (run 'id -u' to check)
+PathModified=/run/user/1000/Proton/VPN/forwarded_port
+Unit=proton-port-watch.service
+
+[Install]
+WantedBy=multi-user.target
