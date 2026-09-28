@@ -33,7 +33,7 @@ PORT_FILE change the 1000 to reflect the UID of the user running protonVPN like 
 QBT_URL this can be changed to the URL that your qBitorrent webUI is accessible at, but authentication needs to be disabled at this time so its best to leave this as localhost.
 
 ## NetworkManager interface zone management
-The script `99-protonvpn-zone` is to be used in the event that you want to move the `proton0` interface from your default firewalld zone unti the dmz—or any other zone—so that port modifications only affect the proton connection.
+The script `99-protonvpn-zone` is to be used in the event that you want to move the `proton0` interface from your default firewalld zone into the dmz—or any other zone—so that port modifications only affect the proton connection.
 
 This script should be placed in `/etc/NetworkManager/dispatcher.d/` and have its ownership set to root:root and permissions set to 700 (read/write/execute for owner only).
 
